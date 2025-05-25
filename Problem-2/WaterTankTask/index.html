@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title style="color: red;">Water Tank Problem</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .grids {
+            display: flex;
+            gap: 50px;
+            margin-top: 20px;
+        }
+
+        .grid-wrapper {
+            text-align: center;
+        }
+
+        .grid-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .grid-row {
+            display: flex;
+        }
+
+        .grid-cell {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 style="color: red;"> Water Tank Problem</h2>
+
+    <div class="grids">
+        <div class="grid-wrapper">
+            <div class="grid-title">Input View (Blocks + Water)</div>
+            <div id="input-grid-container"></div>
+        </div>
+        <div class="grid-wrapper">
+            <div class="grid-title">Output View (Only Water)</div>
+            <div id="output-grid-container"></div>
+        </div>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        // calculate tha trapped water and max boundaries
+        function calculateWater(blocks) {
+            const n = blocks.length;
+            const leftMax = new Array(n).fill(0);
+            const rightMax = new Array(n).fill(0);
+
+            leftMax[0] = blocks[0];
+            for (let i = 1; i < n; i++) {
+                leftMax[i] = Math.max(leftMax[i - 1], blocks[i]);
+            }
+
+            rightMax[n - 1] = blocks[n - 1];
+            for (let i = n - 2; i >= 0; i--) {
+                rightMax[i] = Math.max(rightMax[i + 1], blocks[i]);
+            }
+
+            let totalWater = 0;
+            for (let i = 0; i < n; i++) {
+                totalWater += Math.min(leftMax[i], rightMax[i]) - blocks[i];
+            }
+
+            return { totalWater, leftMax, rightMax };
+        }
+
+        //  to draw the grid with blocks and optional water 
+        function drawBlocks(blocks, leftMax, rightMax, containerId) {
+            const container = document.getElementById(containerId);
+            const maxHeight = Math.max(...blocks);
+
+            for (let level = maxHeight; level > 0; level--) {
+                const row = document.createElement("div");
+                row.className = "grid-row";
+
+                for (let i = 0; i < blocks.length; i++) {
+                    const cell = document.createElement("div");
+                    cell.className = "grid-cell";
+
+                    if (containerId === "input-grid-container") {
+                        //  yellow color for  blocks
+                        if (blocks[i] >= level) {
+                            cell.style.background = "gold";
+                        } else {
+                            const waterLimit = Math.min(leftMax[i], rightMax[i]);
+                            if (level <= waterLimit) {
+                                cell.style.background = "deepskyblue";
+                            }
+                        }
+                    } else if (containerId === "output-grid-container") {
+                        const waterLimit = Math.min(leftMax[i], rightMax[i]);
+                        if (level <= waterLimit && blocks[i] < level) {
+                            cell.style.background = "deepskyblue";
+                        }
+                    }
+
+                    row.appendChild(cell);
+                }
+
+                container.appendChild(row);
+            }
+        }
+
+        // for e.g : block heights
+        const blocks = [0, 4, 0, 0, 0, 6, 0, 6, 4, 0];
+
+        // Calculating the  water and boundary limit
+        const { totalWater, leftMax, rightMax } = calculateWater(blocks);
+
+        //  result
+        document.getElementById("result").textContent = `Output: ${totalWater} Units`;
+
+        
+        drawBlocks(blocks, leftMax, rightMax, "input-grid-container");
+        drawBlocks(blocks, leftMax, rightMax, "output-grid-container");
+    </script>
+</body>
+
+</html>
