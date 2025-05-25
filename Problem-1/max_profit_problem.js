@@ -21,7 +21,7 @@ function calculateBestEarnings(totalTime) {
         if (totalTimeUsed > totalTime) {
           continue;
         }
-        // Each building will earns money every unit of time * after* it's built
+        // Each building will earns money every unit of time * after* it's builts
         let parkIncome = parks * 3000 * (totalTime - parks * 10);
         let theatreIncome =
           theatres * 1500 * (totalTime - parks * 10 - theatres * 5);
