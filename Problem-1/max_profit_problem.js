@@ -1,3 +1,5 @@
+// Recursive DFS with backtracking approach
+
 function getmaxprofit(n) {
   const buildings = [
     { name: "T", time: 5, rate: 1500 },
@@ -41,7 +43,7 @@ function getmaxprofit(n) {
   };
 }
 
-// 🔍 Test Cases for all three metioned in the documents
+// Test Cases for all three metioned in the documents
 console.log("time = 7 :", getmaxprofit(7)); // ans:$3000
 console.log("time = 8 :", getmaxprofit(8)); // ans: $4500
 console.log("time = 13 :", getmaxprofit(13)); // ans: $16500

@@ -3,144 +3,112 @@
 
 <head>
     <meta charset="UTF-8">
-    <title style="color: red;">Water Tank Problem</title>
+    <title>Water Tank Problem</title>
     <style>
-        /* styling */
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             padding: 20px;
-            
         }
 
-        h2 {
-            margin-bottom: 10px;
-        }
-
-        .grids {
-            display: flex;
-            gap: 50px;
+        table {
+            border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .grid-wrapper {
-            text-align: center;
+        td {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
         }
 
-        .grid-title {
-            font-weight: bold;
-            margin-bottom: 8px;
+        .block {
+            background-color: yellow;
         }
 
-        .grid-row {
-            display: flex;
+        .water {
+            background-color: skyblue;
         }
 
-        .grid-cell {
-            width: 20px;
-            height: 20px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
+        .empty {
+            background-color: white;
         }
 
-        #result {
-            margin-top: 20px;
-            font-size: 16px;
-            font-weight: bold;
+        input {
+            padding: 8px;
+            width: 400px;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin-left: 10px;
         }
     </style>
 </head>
 
 <body>
 
-    <h2 style="color: red;"> Water Tank Problem</h2>
+    <h2>Water Tank Problem</h2>
+    <p>Feel free to enter the number to see the magic.....</p>
+    <p>Enter block heights (comma separated):</p>
+    <input type="text" id="inputHeights" placeholder="e.g. 0,4,0,0,0,6,0,6,4,0">
+    <button onclick="solve()">Visualize</button>
 
-    <div class="grids">
-        <div class="grid-wrapper">
-            <div class="grid-title">Input View (Blocks + Water)</div>
-            <div id="input-grid-container"></div>
-        </div>
-        <div class="grid-wrapper">
-            <div class="grid-title">Output View (Only Water)</div>
-            <div id="output-grid-container"></div>
-        </div>
-    </div>
-
-    <div id="result"></div>
+    <h3 id="output"></h3>
+    <div id="grid"></div>
 
     <script>
-        // calculate tha trapped water and max boundaries
-        function calculateWater(blocks) {
-            const n = blocks.length;
-            const leftMax = new Array(n).fill(0);
-            const rightMax = new Array(n).fill(0);
+        function solve() {
+            //getting the input from the user first to calulate that
+            const input = document.getElementById("inputHeights").value;
+            const heights = input.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n));
+            const n = heights.length;
 
-            leftMax[0] = blocks[0];
-            for (let i = 1; i < n; i++) {
-                leftMax[i] = Math.max(leftMax[i - 1], blocks[i]);
-            }
+            if (n === 0) return;
 
-            rightMax[n - 1] = blocks[n - 1];
-            for (let i = n - 2; i >= 0; i--) {
-                rightMax[i] = Math.max(rightMax[i + 1], blocks[i]);
-            }
-
+            const leftMax = Array(n).fill(0);
+            const rightMax = Array(n).fill(0);
             let totalWater = 0;
+
+            leftMax[0] = heights[0];
+            for (let i = 1; i < n; i++) {
+                leftMax[i] = Math.max(leftMax[i - 1], heights[i]);
+            }
+
+            rightMax[n - 1] = heights[n - 1];
+            for (let i = n - 2; i >= 0; i--) {
+                rightMax[i] = Math.max(rightMax[i + 1], heights[i]);
+            }
+
+            const water = Array(n).fill(0);
             for (let i = 0; i < n; i++) {
-                totalWater += Math.min(leftMax[i], rightMax[i]) - blocks[i];
+                water[i] = Math.max(0, Math.min(leftMax[i], rightMax[i]) - heights[i]);
+                totalWater += water[i];
             }
 
-            return { totalWater, leftMax, rightMax };
-        }
-
-        //  to draw the grid with blocks and optional water 
-        function drawBlocks(blocks, leftMax, rightMax, containerId) {
-            const container = document.getElementById(containerId);
-            const maxHeight = Math.max(...blocks);
-
-            for (let level = maxHeight; level > 0; level--) {
-                const row = document.createElement("div");
-                row.className = "grid-row";
-
-                for (let i = 0; i < blocks.length; i++) {
-                    const cell = document.createElement("div");
-                    cell.className = "grid-cell";
-
-                    if (containerId === "input-grid-container") {
-                        //  yellow color for  blocks
-                        if (blocks[i] >= level) {
-                            cell.style.background = "gold";
-                        } else {
-                            const waterLimit = Math.min(leftMax[i], rightMax[i]);
-                            if (level <= waterLimit) {
-                                cell.style.background = "deepskyblue";
-                            }
-                        }
-                    } else if (containerId === "output-grid-container") {
-                        const waterLimit = Math.min(leftMax[i], rightMax[i]);
-                        if (level <= waterLimit && blocks[i] < level) {
-                            cell.style.background = "deepskyblue";
-                        }
+            const maxHeight = Math.max(...heights.map((h, i) => h + water[i]));
+            const table = document.createElement("table");
+// creating the table using js dynamically
+            for (let row = maxHeight; row > 0; row--) {
+                const tr = document.createElement("tr");
+                for (let col = 0; col < n; col++) {
+                    const td = document.createElement("td");
+                    if (heights[col] >= row) {
+                        td.className = "block";
+                    } else if ((heights[col] + water[col]) >= row) {
+                        td.className = "water";
+                    } else {
+                        td.className = "empty";
                     }
-
-                    row.appendChild(cell);
+                    tr.appendChild(td);
                 }
-
-                container.appendChild(row);
+                table.appendChild(tr);
             }
+
+            document.getElementById("grid").innerHTML = '';
+            document.getElementById("grid").appendChild(table);
+            //finaly heere its show the total units 
+            document.getElementById("output").innerText = `💧 Total Trapped Water: ${totalWater} Units`;
         }
-
-        // for e.g : block heights
-        const blocks = [0, 4, 0, 0, 0, 6, 0, 6, 4, 0];
-
-        // Calculating the  water and boundary limit
-        const { totalWater, leftMax, rightMax } = calculateWater(blocks);
-
-        //  result
-        document.getElementById("result").textContent = `Output: ${totalWater} Units`;
-
-        
-        drawBlocks(blocks, leftMax, rightMax, "input-grid-container");
-        drawBlocks(blocks, leftMax, rightMax, "output-grid-container");
     </script>
 </body>
 
