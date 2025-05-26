@@ -1,56 +1,47 @@
-function calculateBestEarnings(totalTime) {
-  let highestProfit = 0;
-  let selectedPlan = { theatres: 0, pubs: 0, parks: 0 };
+function getmaxprofit(n) {
+  const buildings = [
+    { name: "T", time: 5, rate: 1500 },
+    { name: "P", time: 4, rate: 1000 },
+    { name: "C", time: 10, rate: 3000 },
+  ];
 
-  // Trying every possible number of commercial parks we can build
-  for (let parks = 0; parks <= Math.floor(totalTime / 10); parks++) {
-    let tLeftAfterPark = totalTime - parks * 10;
+  let maxProfit = 0;
+  let bestCombo = { T: 0, P: 0, C: 0 };
+  // passing the inputs
+  function dfs(currentTime, profit, combo) {
+    let updated = false;
 
-    // Trying every possible number of theatres we can build after parks
-    for (
-      let theatres = 0;
-      theatres <= Math.floor(tLeftAfterPark / 5);
-      theatres++
-    ) {
-      let usedbytheatre = theatres * 5;
-      let tLeftAfterTheatre = tLeftAfterPark - usedbytheatre;
-      // Trying every number of pub we can squeeze in the remaining period of time
+    for (let b of buildings) {
+      if (currentTime + b.time <= n) {
+        const nextTime = currentTime + b.time;
+        const operationalTime = n - nextTime;
+        const gain = b.rate * operationalTime;
 
-      for (let pubs = 0; pubs <= Math.floor(tLeftAfterTheatre / 4); pubs++) {
-        let totalTimeUsed = parks * 10 + theatres * 5 + pubs * 4;
-        if (totalTimeUsed > totalTime) {
-          continue;
-        }
-        // Each building will earns money every unit of time * after* it's builts
-        let parkIncome = parks * 3000 * (totalTime - parks * 10);
-        let theatreIncome =
-          theatres * 1500 * (totalTime - parks * 10 - theatres * 5);
-        let pubIncome =
-          pubs * 1000 * (totalTime - parks * 10 - theatres * 5 - pubs * 4);
+        const newCombo = { ...combo };
+        newCombo[b.name] = (newCombo[b.name] || 0) + 1;
 
-        let totalIncome = parkIncome + theatreIncome + pubIncome;
+        dfs(nextTime, profit + gain, newCombo);
+        updated = true;
+      }
+    }
 
-        // we need to save the best combination
-        if (totalIncome > highestProfit) {
-          highestProfit = totalIncome;
-          selectedPlan = {
-            theatres: theatres,
-            pubs: pubs,
-            parks: parks,
-          };
-        }
+    if (!updated) {
+      if (profit > maxProfit) {
+        maxProfit = profit;
+        bestCombo = combo;
       }
     }
   }
-  // Printing the output  in a readable format
-  console.log(`Time Unit: ${totalTime}`);
-  console.log(`Earnings: $${highestProfit}`);
-  console.log(
-    `Solution: T: ${selectedPlan.theatres}, P: ${selectedPlan.pubs}, C: ${selectedPlan.parks}`
-  );
+
+  dfs(0, 0, { T: 0, P: 0, C: 0 });
+  //return the combos here
+  return {
+    combo: `T: ${bestCombo.T} P: ${bestCombo.P} C: ${bestCombo.C}`,
+    profit: `$${maxProfit}`,
+  };
 }
 
-// for few example cases
-calculateBestEarnings(7); // it Should be $3000
-calculateBestEarnings(8); // it Should be $4500
-calculateBestEarnings(13); //it  Should be $16500
+// 🔍 Test Cases for all three metioned in the documents
+console.log("time = 7 :", getmaxprofit(7)); // ans:$3000
+console.log("time = 8 :", getmaxprofit(8)); // ans: $4500
+console.log("time = 13 :", getmaxprofit(13)); // ans: $16500
